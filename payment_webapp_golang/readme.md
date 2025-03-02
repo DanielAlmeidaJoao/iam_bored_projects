@@ -5,3 +5,6 @@ sudo docker compose up -d
 sudo docker compose down
 
 go mod init auth-service
+
+docker exec -it <container_name_or_id> /bin/bash
+docker exec -it <container_name_or_id> /bin/sh
