@@ -1,0 +1,5 @@
+services:
+  db:
+    build: ./db_service
+    ports:
+      - "3306:3306"
