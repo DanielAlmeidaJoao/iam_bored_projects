@@ -21,25 +21,18 @@ type Album struct {
 var db *sql.DB
 
 func main() {
-	envErr := godotenv.Load("properties.env")
-
-	if envErr != nil {
-		log.Fatal(envErr)
-	}
-	// Capture connection properties.
-	cfg := mysql.Config{
-		User:   os.Getenv("MYSQL_USER"),
-		Passwd: os.Getenv("MYSQL_PASSWORD"),
-		Net:    "tcp",
-		Addr:   os.Getenv("MYSQL_ADDRESS"),
-		DBName: os.Getenv("MYSQL_DATABASE"),
-	}
 
 	// Get a databse handle
 	//fmt.Println(cfg.FormatDSN())
 
+	cfgStr, cfgError := getConnectionProperties("properties.env")
+
+	if cfgError != nil {
+		log.Fatal(cfgError)
+	}
+
 	var err error
-	db, err = sql.Open("mysql", cfg.FormatDSN())
+	db, err = sql.Open("mysql", cfgStr)
 
 	if err != nil {
 		log.Fatal(err)
@@ -139,4 +132,23 @@ func addAlbum(alb Album) (int64, error) {
 	}
 
 	return id, nil
+}
+
+func getConnectionProperties(str string) (string, error) {
+	envErr := godotenv.Load(str)
+
+	if envErr == nil {
+		// Capture connection properties.
+		cfg := mysql.Config{
+			User:   os.Getenv("MYSQL_USER"),
+			Passwd: os.Getenv("MYSQL_PASSWORD"),
+			Net:    "tcp",
+			Addr:   os.Getenv("MYSQL_ADDRESS"),
+			DBName: os.Getenv("MYSQL_DATABASE"),
+		}
+
+		return cfg.FormatDSN(), nil
+	} else {
+		return "", envErr
+	}
 }
