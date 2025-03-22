@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -15,6 +16,10 @@ var jwtKey = []byte("your-secret-key")
 type Claims struct {
 	Username string `json:"username"`
 	jwt.RegisteredClaims
+}
+type LoginCredentioals struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 // Generate JWT
@@ -60,8 +65,15 @@ func getLoggedUsername(r *http.Request) (string, error) {
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	username := r.URL.Query().Get("username")
-	password := r.URL.Query().Get("password")
+	decoder := json.NewDecoder(r.Body)
+	var t LoginCredentioals
+	err := decoder.Decode(&t)
+	if err != nil {
+		panic(err)
+	}
+
+	username := t.Username
+	password := t.Password
 
 	// Simulate user authentication (Use a database in real-world apps)
 	if username != "alice" || password != "password" {
@@ -100,9 +112,9 @@ var userRoles = map[string]string{
 }
 
 func main() {
-	http.HandleFunc("/login", loginHandler)
+	http.HandleFunc("POST /login", loginHandler)
 
-	http.HandleFunc("/admin", adminHandler)
+	http.HandleFunc("POST /admin", adminHandler)
 
 	log.Println("Server started on :8080")
 	http.ListenAndServe(":8080", nil)
